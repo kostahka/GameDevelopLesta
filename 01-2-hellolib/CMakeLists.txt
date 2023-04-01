@@ -17,9 +17,6 @@ if(WIN32)
     set_target_properties(hello-bin-shared PROPERTIES RUNTIME_OUTPUT_DIRECTORY
                                                       ${CMAKE_BINARY_DIR})
 
-    set_target_properties(
-        hello-lib-shared
-        PROPERTIRES
-        RUNTIME_OUTPUT_DIRECTORY
-        ${CMAKE_BINARY_DIR})
+    set_target_properties(hello-lib-shared PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+                                                      ${CMAKE_BINARY_DIR})
 endif()
