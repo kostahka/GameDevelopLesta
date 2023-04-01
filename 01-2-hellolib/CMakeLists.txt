@@ -7,3 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(bin)
 add_subdirectory(lib)
+
+include(CTest)
+
+add_test(NAME static-hello-result-zero COMMAND hello-bin-static)
+add_test(NAME shared-hello-result-zero COMMAND hello-bin-shared)
