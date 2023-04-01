@@ -12,3 +12,8 @@ include(CTest)
 
 add_test(NAME static-hello-result-zero COMMAND hello-bin-static)
 add_test(NAME shared-hello-result-zero COMMAND hello-bin-shared)
+
+if(WIN32)
+    set_target_properties(hello-world-shared PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+                                                        ${CMAKE_BINARY_DIR})
+endif()
