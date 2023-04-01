@@ -14,6 +14,6 @@
 #define LIB_API
 #endif
 
-bool hello_world();
+LIB_API bool hello_world();
 
 #endif
