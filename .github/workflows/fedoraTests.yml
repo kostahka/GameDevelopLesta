@@ -12,7 +12,7 @@ env:
 jobs:
   build-test:
     runs-on: ubuntu-latest
-    container: kostahka/fedora-latest
+    container: kostahka/fedora_latest
 
     steps:
     - uses: actions/checkout@v3
