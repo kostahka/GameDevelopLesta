@@ -8,9 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(01-1-hello-world main.cpp)
 
 install(TARGETS 01-1-hello-world
-        RUNTIME DESTINATION ${CMAKE_CURRENT_LIST_DIR}/bin/tests
-        LIBRARY DESTINATION ${CMAKE_CURRENT_LIST_DIR}/bin/tests
-        ARCHIVE DESTINATION ${CMAKE_CURRENT_LIST_DIR}/bin/tests)
+        RUNTIME DESTINATION ${CMAKE_CURRENT_LIST_DIR}/../bin/tests
+        LIBRARY DESTINATION ${CMAKE_CURRENT_LIST_DIR}/../bin/tests
+        ARCHIVE DESTINATION ${CMAKE_CURRENT_LIST_DIR}/../bin/tests)
 
 include(CTest)
 
