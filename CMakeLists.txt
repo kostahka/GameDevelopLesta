@@ -9,3 +9,4 @@ include(CTest)
 
 add_subdirectory(01-1-hello-world)
 add_subdirectory(01-2-hellolib)
+add_subdirectory(02-1-sdl-static)
