@@ -15,3 +15,7 @@ install(TARGETS hello-bin-shared hello-bin-static
         RUNTIME DESTINATION ${CMAKE_CURRENT_LIST_DIR}/../../bin/tests
         LIBRARY DESTINATION ${CMAKE_CURRENT_LIST_DIR}/../../bin/tests
         ARCHIVE DESTINATION ${CMAKE_CURRENT_LIST_DIR}/../../bin/tests)
+
+set_target_properties(
+    hello-bin-shared PROPERTIES INSTALL_RPATH
+                                ${CMAKE_CURRENT_LIST_DIR}/../../bin/tests)
