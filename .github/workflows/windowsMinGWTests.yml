@@ -31,7 +31,7 @@ jobs:
       run: |
         git clone https://github.com/libsdl-org/SDL
         mkdir SDL/build
-        cmake SDL -B SDL/build -G Ninja -DSDL_SHARED=ON -DSDL_STATIC=ON -DCMAKE_INSTALL_PREFIX=cmake_prefix -DCMAKE_DISABLE_PRECOMPILE_HEADERS=OFF
+        cmake SDL -B SDL/build -G Ninja -DSDL_SHARED=ON -DSDL_STATIC=ON -DSDL_STATIC_PIC=ON -DCMAKE_INSTALL_PREFIX=cmake_prefix
         cmake --build SDL/build --config ${{env.BUILD_TYPE}} --parallel
         echo "SDL3_DIR=$Env:GITHUB_WORKSPACE/cmake_prefix" >> $Env:GITHUB_ENV
         cmake --install SDL/build --config ${{env.BUILD_TYPE}}
