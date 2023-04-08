@@ -16,6 +16,16 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Install SDL3
+      run: |
+        git clone https://github.com/libsdl-org/SDL
+        cd SDL
+        mkdir build
+        cd build
+        cmake .. -DSDL_SHARED=ON -DSDL_STATIC=ON
+        cmake --build .
+        cmake --install .
+
     - name: Set up MinGW
       uses: egor-tensin/setup-mingw@v2
       with:
