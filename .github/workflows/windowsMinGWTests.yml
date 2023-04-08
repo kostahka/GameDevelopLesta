@@ -14,8 +14,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
-
     - name: Set up MSYS2
       uses: msys2/setup-msys2@v2
       with:
@@ -26,6 +24,8 @@ jobs:
           mingw-w64-x86_64-ninja
           mingw-w64-x86_64-pkg-config
           mingw-w64-x86_64-clang-tools-extra
+
+    - uses: actions/checkout@v3
 
     - name: Install SDL3
       run: |
