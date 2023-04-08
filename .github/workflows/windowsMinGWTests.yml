@@ -33,6 +33,7 @@ jobs:
 
     - name: Download SDL3
       run: git clone https://github.com/libsdl-org/SDL
+      shell: bash
 
     - name: Install SDL3
       run: |
