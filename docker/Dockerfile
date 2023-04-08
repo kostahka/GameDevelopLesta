@@ -9,6 +9,6 @@ RUN git clone https://github.com/libsdl-org/SDL && \
 cd SDL &&\
 mkdir build &&\
 cd build &&\
-cmake .. &&\
+cmake .. -DSDL_SHARED=ON -DSDL_STATIC=ON &&\
 cmake --build . &&\
 cmake --install .
