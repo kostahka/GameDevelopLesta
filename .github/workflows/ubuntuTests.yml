@@ -15,12 +15,12 @@ jobs:
     
     - name: Install SDL3
       run: |
-        git clone git clone https://github.com/libsdl-org/SDL && \
-        cd SDL && \
-        mkdir build && \
-        cd build && \
-        cmake .. -DSDL_SHARED=ON -DSDL_STATIC=ON && \
-        cmake --build . && \
+        git clone git clone https://github.com/libsdl-org/SDL
+        cd SDL
+        mkdir build
+        cd build
+        cmake .. -DSDL_SHARED=ON -DSDL_STATIC=ON
+        cmake --build .
         cmake --install .
 
     - name: Configure CMake
