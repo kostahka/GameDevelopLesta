@@ -15,7 +15,7 @@ jobs:
     
     - name: Install SDL3
       run: |
-        git clone git clone https://github.com/libsdl-org/SDL
+        git clone https://github.com/libsdl-org/SDL
         cd SDL
         mkdir build
         cd build
