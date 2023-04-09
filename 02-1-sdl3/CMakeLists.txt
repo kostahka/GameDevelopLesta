@@ -7,11 +7,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(SDL3 REQUIRED)
 
+if(TARGET SDL3::SDL3-shared)
+    get_target_property(PATH_TO_SDL3_SHARED SDL3::SDL3-shared LOCATION)
+endif()
+
 add_executable(sdl-bin-static src/main.cxx)
 target_link_libraries(sdl-bin-static PUBLIC SDL3::SDL3-static)
 
 add_executable(sdl-bin-shared src/main.cxx)
 target_link_libraries(sdl-bin-shared PUBLIC SDL3::SDL3-shared)
+
+set_target_properties(sdl-bin-shared PROPERTIES BUILD_RPATH
+                                                ${PATH_TO_SDL3_SHARED})
 
 include(CTest)
 
