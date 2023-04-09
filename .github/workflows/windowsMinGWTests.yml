@@ -43,7 +43,7 @@ jobs:
         cmake --install SDL/build --config ${{env.BUILD_TYPE}}
     
     - name: Configure CMake
-      run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja -DSDL3-DIR=prefix
+      run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja -DCMAKE_PREFIX_PATH=prefix
 
     - name: Build
       run: cmake --build build --config ${{env.BUILD_TYPE}}
