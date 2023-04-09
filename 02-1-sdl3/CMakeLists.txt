@@ -27,9 +27,8 @@ set_target_properties(sdl-bin-shared PROPERTIES INSTALL_RPATH
                                                 ${SDL3_SHARED_PATH})
 
 if(WIN32)
-    get_target_property(PATH_TO_SDL_BIN_SHARED sdl-bin-shared
-                        RUNTIME_OUTPUT_DIRECTORY)
-    file(COPY ${PATH_TO_SDL3_SHARED} DESTINATION ${PATH_TO_SDL_BIN_SHARED})
+    file(COPY ${PATH_TO_SDL3_SHARED}
+         DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 endif()
 
 include(CTest)
