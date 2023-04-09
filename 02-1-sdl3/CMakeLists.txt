@@ -9,6 +9,12 @@ find_package(SDL3 REQUIRED)
 
 if(TARGET SDL3::SDL3-shared)
     get_target_property(PATH_TO_SDL3_SHARED SDL3::SDL3-shared LOCATION)
+    cmake_path(
+        GET
+        PATH_TO_SDL3_SHARED
+        PARENT_PATH
+        SDL3_SHARED_PATH)
+    message(STATUS "path to sdl shared: [${SDL3_SHARED_PATH}]")
 endif()
 
 add_executable(sdl-bin-static src/main.cxx)
@@ -17,8 +23,7 @@ target_link_libraries(sdl-bin-static PUBLIC SDL3::SDL3-static)
 add_executable(sdl-bin-shared src/main.cxx)
 target_link_libraries(sdl-bin-shared PUBLIC SDL3::SDL3-shared)
 
-set_target_properties(sdl-bin-shared PROPERTIES BUILD_RPATH
-                                                ${PATH_TO_SDL3_SHARED})
+set_target_properties(sdl-bin-shared PROPERTIES BUILD_RPATH ${SDL3_SHARED_PATH})
 
 include(CTest)
 
