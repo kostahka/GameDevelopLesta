@@ -23,7 +23,9 @@ target_link_libraries(sdl-bin-static PUBLIC SDL3::SDL3-static)
 add_executable(sdl-bin-shared src/main.cxx)
 target_link_libraries(sdl-bin-shared PUBLIC SDL3::SDL3-shared)
 
-set_target_properties(sdl-bin-shared PROPERTIES BUILD_RPATH ${SDL3_SHARED_PATH})
+set_target_properties(
+    sdl-bin-shared PROPERTIES BUILD_RPATH ${SDL3_SHARED_PATH}
+                              INSTALL_RPATH ${SDL3_SHARED_PATH})
 
 include(CTest)
 
