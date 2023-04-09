@@ -17,10 +17,6 @@ if(TARGET SDL3::SDL3-shared)
     message(STATUS "path to sdl shared: [${SDL3_SHARED_PATH}]")
 endif()
 
-if(WIN32)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif()
-
 add_executable(sdl-bin-static src/main.cxx)
 target_link_libraries(sdl-bin-static PUBLIC SDL3::SDL3-static)
 
@@ -29,6 +25,12 @@ target_link_libraries(sdl-bin-shared PUBLIC SDL3::SDL3-shared)
 
 set_target_properties(sdl-bin-shared PROPERTIES INSTALL_RPATH
                                                 ${SDL3_SHARED_PATH})
+
+if(WIN32)
+    get_target_property(PATH_TO_SDL_BIN_SHARED sdl-bin-shared
+                        RUNTIME_OUTPUT_DIRECTORY)
+    file(COPY ${PATH_TO_SDL3_SHARED} DESTINATION ${PATH_TO_SDL_BIN_SHARED})
+endif()
 
 include(CTest)
 
