@@ -37,9 +37,13 @@ jobs:
 
     - name: Download SDL3
       run: |
-        [ ! -d "SDL" ] && git clone https://github.com/libsdl-org/SDL
+        if ! test -d SDL then
+            git clone https://github.com/libsdl-org/SDL
+        fi
         cd SDL
-        [ ! -d "build" ] && mkdir build
+        if ! test -d build then
+            mkdir build
+        fi
       shell: bash
 
     - name: Install SDL3

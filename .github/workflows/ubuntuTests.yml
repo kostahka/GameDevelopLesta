@@ -22,9 +22,13 @@ jobs:
 
     - name: Install SDL3
       run: |
-        [ ! -d "SDL" ] && git clone https://github.com/libsdl-org/SDL
+        if ! test -d SDL then
+            git clone https://github.com/libsdl-org/SDL
+        fi
         cd SDL
-        [ ! -d "build" ] && mkdir build
+        if ! test -d build then
+            mkdir build
+        fi
         cd build
         cmake .. -DSDL_SHARED=ON -DSDL_STATIC=ON
         cmake --build .
