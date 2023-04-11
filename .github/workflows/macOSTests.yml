@@ -22,11 +22,11 @@ jobs:
 
     - name: Install SDL3
       run: |
-        if ! test -d SDL then
+        if ! test -d SDL; then
            git clone https://github.com/libsdl-org/SDL
         fi
         cd SDL
-        if ! test -d build then
+        if ! test -d build; then
             mkdir build
         fi
         cd build
