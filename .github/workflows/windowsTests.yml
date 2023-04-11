@@ -21,6 +21,7 @@ jobs:
       with:
         path: |
           SDL
+        key: windows-sdl3
 
     - name: Install SDL3
       run: |
