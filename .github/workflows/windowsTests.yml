@@ -25,8 +25,8 @@ jobs:
 
     - name: Install SDL3
       run: |
-        git clone https://github.com/libsdl-org/SDL
-        mkdir SDL/build
+        [ ! -d "SDL" ] && git clone https://github.com/libsdl-org/SDL
+        [ ! -d "SDL/build" ] && mkdir SDL/build
         cmake SDL -B SDL/build -DSDL_SHARED=ON -DSDL_STATIC=ON -DCMAKE_INSTALL_PREFIX=prefix
         cmake --build SDL/build --config ${{env.BUILD_TYPE}} --parallel
         echo "SDL3_DIR=$Env:GITHUB_WORKSPACE/prefix" >> $Env:GITHUB_ENV

@@ -36,12 +36,14 @@ jobs:
         key: windowsMinGW-sdl3
 
     - name: Download SDL3
-      run: git clone https://github.com/libsdl-org/SDL
+      run: |
+        [ ! -d "SDL" ] && git clone https://github.com/libsdl-org/SDL
+        cd SDL
+        [ ! -d "build" ] && mkdir build
       shell: bash
 
     - name: Install SDL3
       run: |
-        mkdir SDL/build
         cmake SDL -B SDL/build -G Ninja -DSDL_SHARED=ON -DSDL_STATIC=ON
         cmake --build SDL/build --parallel --verbose
         cmake --install SDL/build
