@@ -14,6 +14,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Cache SDL3
+      uses: actions/cache@v3
+      with:
+        path: |
+          SDL
+        key: fedora-sdl3
+
     - name: Configure CMake
       run: CXX=clang++ cmake -B ${{github.workspace}}/build
 

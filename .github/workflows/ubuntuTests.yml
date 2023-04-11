@@ -12,7 +12,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    
+
+    - name: Cache SDL3
+      uses: actions/cache@v3
+      with:
+        path: |
+          SDL
+        key: ubuntu-sdl3
+
     - name: Install SDL3
       run: |
         git clone https://github.com/libsdl-org/SDL
