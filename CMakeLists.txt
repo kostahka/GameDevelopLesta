@@ -9,6 +9,6 @@ include(CTest)
 
 add_subdirectory(01-1-hello-world)
 add_subdirectory(01-2-hellolib)
-add_subdirectory(02-1-sdl3)
-add_subdirectory(02-2-sdl3)
+add_subdirectory(02-1-sdl3-version)
+add_subdirectory(02-2-sdl3-window)
 add_subdirectory(03-1-sdl-loop)
