@@ -30,7 +30,7 @@ jobs:
             mkdir build
         fi
         cd build
-        cmake .. -DSDL_SHARED=ON -DSDL_STATIC=ON
+        cmake .. -DSDL_STATIC_PIC=ON -DSDL_SHARED=ON -DSDL_STATIC=ON
         cmake --build .
         sudo cmake --install .
 

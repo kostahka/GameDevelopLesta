@@ -48,7 +48,7 @@ jobs:
 
     - name: Install SDL3
       run: |
-        cmake SDL -B SDL/build -G Ninja -DSDL_SHARED=ON -DSDL_STATIC=ON
+        cmake SDL -B SDL/build -G Ninja -DSDL_STATIC_PIC=ON -DSDL_SHARED=ON -DSDL_STATIC=ON
         cmake --build SDL/build --parallel --verbose
         cmake --install SDL/build
     
