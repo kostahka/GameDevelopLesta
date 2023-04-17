@@ -5,3 +5,4 @@ tmp/
 build
 bin
 .cache
+/cmake-build-debug/

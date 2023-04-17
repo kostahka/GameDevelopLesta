@@ -49,7 +49,7 @@ public:
         for (const rect& r : rects)
         {
             game_engine->set_render_draw_color(
-                55, 55 * sin(r.h / 200), 255 * cos(r.h / 200), 255);
+                155, 155 * sin(r.h / 200), 255 * cos(r.h / 200), 255);
             game_engine->render_fill_rect(&r);
         }
     };

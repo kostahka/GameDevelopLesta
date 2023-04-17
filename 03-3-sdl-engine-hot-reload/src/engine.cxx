@@ -8,6 +8,27 @@
 namespace Kengine
 {
 
+enum class UserEvents
+{
+    UpdateEvent = 1,
+    RenderEvent = 2,
+    ReloadGame  = 3,
+};
+
+void push_user_event(int user_event_code)
+{
+    SDL_Event     event;
+    SDL_UserEvent user_event;
+
+    user_event.code = user_event_code;
+
+    user_event.type = SDL_EVENT_USER;
+
+    event.type = SDL_EVENT_USER;
+    event.user = user_event;
+
+    SDL_PushEvent(&event);
+};
 class engine_impl;
 Uint32 update_timer_callback(Uint32 interval, void* param);
 Uint32 render_timer_callback(Uint32 interval, void* param);
@@ -24,16 +45,9 @@ public:
 
         if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
         {
-            *oerr << "Error to initialize SDL. Error: " << SDL_GetError();
+            *oerr << "Error to initialize SDL. Error: " << SDL_GetError()
+                  << std::endl;
             return return_code::sdl_init_fail;
-        }
-
-        g_buffer_lock = SDL_CreateMutex();
-        if (g_buffer_lock == nullptr)
-        {
-            *oerr << "Failed to create a mutex. Error: " << SDL_GetError();
-            SDL_Quit();
-            return return_code::create_mutex_fail;
         }
 
         return return_code::good;
@@ -49,9 +63,6 @@ public:
 
     return_code uninitialize() override
     {
-        if (g_buffer_lock)
-            SDL_DestroyMutex(g_buffer_lock);
-
         if (renderer)
             SDL_DestroyRenderer(renderer);
 
@@ -75,7 +86,8 @@ public:
 
         if (window == nullptr)
         {
-            *oerr << "Error to create window. Error: " << SDL_GetError();
+            *oerr << "Error to create window. Error: " << SDL_GetError()
+                  << std::endl;
             SDL_Quit();
             return return_code::create_window_fail;
         }
@@ -84,7 +96,8 @@ public:
 
         if (renderer == nullptr)
         {
-            *oerr << "Failed to create a renderer. Error: " << SDL_GetError();
+            *oerr << "Failed to create a renderer. Error: " << SDL_GetError()
+                  << std::endl;
             SDL_DestroyWindow(window);
             SDL_Quit();
             return return_code::create_renderer_fail;
@@ -97,7 +110,8 @@ public:
 
         if (update_timer_id == 0)
         {
-            *oerr << "Failed to create update timer. Error: " << SDL_GetError();
+            *oerr << "Failed to create update timer. Error: " << SDL_GetError()
+                  << std::endl;
             return return_code::create_timer_fail;
         }
 
@@ -106,7 +120,8 @@ public:
 
         if (render_timer_id == 0)
         {
-            *oerr << "Failed to create update timer. Error: " << SDL_GetError();
+            *oerr << "Failed to create update timer. Error: " << SDL_GetError()
+                  << std::endl;
             return return_code::create_timer_fail;
         }
 
@@ -134,13 +149,27 @@ public:
                         event.type    = event_type::quit;
                         continue_loop = false;
                         break;
+                    case SDL_EVENT_USER:
+                        event.type = event_type::unknown;
+                        switch (sdl_event.user.code)
+                        {
+                            case (int)UserEvents::ReloadGame:
+                                reload_game();
+                                break;
+                            case (int)UserEvents::RenderEvent:
+                                render();
+                                break;
+                            case (int)UserEvents::UpdateEvent:
+                                update();
+                                break;
+                            default:
+                                break;
+                        }
                     default:
                         event.type = event_type::unknown;
                 }
 
-                SDL_LockMutex(g_buffer_lock);
                 e_game->on_event(event);
-                SDL_UnlockMutex(g_buffer_lock);
             }
         }
 
@@ -163,7 +192,7 @@ public:
         if (hot_reload_timer_id == 0)
         {
             *oerr << "Failed to create hot reload timer. Error: "
-                  << SDL_GetError();
+                  << SDL_GetError() << std::endl;
             return return_code::create_timer_fail;
         }
 
@@ -179,7 +208,8 @@ public:
         if (SDL_RenderFillRect(renderer,
                                reinterpret_cast<const SDL_FRect*>(rect)) < 0)
         {
-            *oerr << "Error to draw rect. Error: " << SDL_GetError();
+            *oerr << "Error to draw rect. Error: " << SDL_GetError()
+                  << std::endl;
             return return_code::render_fill_rect_fail;
         }
 
@@ -193,7 +223,8 @@ public:
     {
         if (SDL_SetRenderDrawColor(renderer, r, g, b, a) < 0)
         {
-            *oerr << "Failed to set draw color. Error: " << SDL_GetError();
+            *oerr << "Failed to set draw color. Error: " << SDL_GetError()
+                  << std::endl;
             return return_code::set_render_draw_color_fail;
         }
 
@@ -202,42 +233,25 @@ public:
 
     void update()
     {
-        SDL_LockMutex(g_buffer_lock);
-
         int curr_tick                = SDL_GetTicks();
         e_game->update_delta_time_ms = curr_tick - update_tick;
 
         e_game->update_time_ms = update_tick = curr_tick;
 
         e_game->on_update();
-
-        SDL_UnlockMutex(g_buffer_lock);
     };
 
     void render()
     {
-        SDL_LockMutex(g_buffer_lock);
-
         e_game->on_render();
         SDL_RenderPresent(renderer);
-
-        SDL_UnlockMutex(g_buffer_lock);
     };
 
-    void set_game(game* e_game) override
-    {
-        SDL_LockMutex(g_buffer_lock);
-
-        this->e_game = e_game;
-
-        SDL_UnlockMutex(g_buffer_lock);
-    }
+    void set_game(game* e_game) override { this->e_game = e_game; }
 
     // Dev
     bool reload_game()
     {
-        SDL_LockMutex(g_buffer_lock);
-
         if (e_game != nullptr)
         {
             delete e_game;
@@ -251,7 +265,6 @@ public:
             {
                 *oerr << "Failed to remove temp lib [" << tmp_lib_name << "]"
                       << std::endl;
-                SDL_UnlockMutex(g_buffer_lock);
                 return false;
             }
         }
@@ -264,7 +277,6 @@ public:
         {
             *oerr << "Failed to copy from [" << lib_name << "] to ["
                   << tmp_lib_name << "]" << std::endl;
-            SDL_UnlockMutex(g_buffer_lock);
             return false;
         }
 
@@ -274,7 +286,6 @@ public:
         {
             *oerr << "Failed to load lib from [" << tmp_lib_name << "]"
                   << std::endl;
-            SDL_UnlockMutex(g_buffer_lock);
             return false;
         }
 
@@ -285,7 +296,6 @@ public:
         {
             *oerr << "Failed to load function [create_game] from ["
                   << tmp_lib_name << "]" << std::endl;
-            SDL_UnlockMutex(g_buffer_lock);
             return false;
         }
 
@@ -299,15 +309,12 @@ public:
         if (new_game == nullptr)
         {
             *oerr << "Failed to create game" << std::endl;
-            SDL_UnlockMutex(g_buffer_lock);
             return false;
         }
 
         e_game = new_game;
 
         e_game->on_start();
-
-        SDL_UnlockMutex(g_buffer_lock);
 
         return true;
     };
@@ -322,9 +329,6 @@ private:
     SDL_Window*   window   = nullptr;
     SDL_Renderer* renderer = nullptr;
     std::ostream* oerr     = nullptr;
-
-    // Threads
-    SDL_mutex* g_buffer_lock = nullptr;
 
     // SDL keys to engine keys
     key_name get_key_name(SDL_Keycode sdl_key_code)
@@ -351,15 +355,13 @@ private:
 
 Uint32 update_timer_callback(Uint32 interval, void* param)
 {
-    engine_impl* engine = reinterpret_cast<engine_impl*>(param);
-    engine->update();
+    push_user_event((int)UserEvents::UpdateEvent);
     return interval;
 }
 
 Uint32 render_timer_callback(Uint32 interval, void* param)
 {
-    engine_impl* engine = reinterpret_cast<engine_impl*>(param);
-    engine->render();
+    push_user_event((int)UserEvents::RenderEvent);
     return interval;
 }
 
@@ -382,8 +384,7 @@ Uint32 hot_reload_timer_callback(Uint32 interval, void* param)
 
         if (next_write_time == current_write_time)
         {
-            if (!engine->reload_game())
-                return 0;
+            push_user_event((int)UserEvents::ReloadGame);
             file_is_changing    = false;
             time_during_loading = next_write_time;
         }
@@ -426,7 +427,7 @@ int main()
 
     using namespace std::string_literals;
     std::string lib_name = SDL_GetPlatform() == "Windows"s
-                               ? "libgame-hot-load-shared.dll"
+                               ? "game-hot-load-shared.dll"
                                : "./libgame-hot-load-shared.so";
 
     std::string tmp_lib_name = "./temp.dll";
