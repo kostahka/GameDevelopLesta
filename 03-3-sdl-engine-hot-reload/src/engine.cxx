@@ -253,7 +253,7 @@ public:
     // Dev
     bool reload_game()
     {
-        if (e_game != nullptr)
+        if (e_game)
         {
             delete e_game;
             SDL_UnloadObject(lib_handle);
@@ -272,7 +272,7 @@ public:
 
         try
         {
-            copy(lib_name, tmp_lib_name);
+            copy_file(lib_name, tmp_lib_name);
         }
         catch (const std::exception* ex)
         {
@@ -388,10 +388,12 @@ Uint32 hot_reload_timer_callback(Uint32 interval, void* param)
             push_user_event((int)user_events::reload_game);
             file_is_changing    = false;
             time_during_loading = next_write_time;
+            return 200;
         }
         else
         {
             current_write_time = next_write_time;
+            return 1000;
         }
     }
     else
@@ -400,6 +402,7 @@ Uint32 hot_reload_timer_callback(Uint32 interval, void* param)
         if (current_write_time != time_during_loading)
         {
             file_is_changing = true;
+            return 1000;
         }
     }
     return interval;
