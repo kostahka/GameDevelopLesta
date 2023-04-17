@@ -8,11 +8,11 @@
 namespace Kengine
 {
 
-enum class UserEvents
+enum class user_events
 {
-    UpdateEvent = 1,
-    RenderEvent = 2,
-    ReloadGame  = 3,
+    update_event = 1,
+    render_event = 2,
+    reload_game  = 3,
 };
 
 void push_user_event(int user_event_code)
@@ -132,6 +132,7 @@ public:
 
         while (continue_loop)
         {
+
             while (SDL_PollEvent(&sdl_event))
             {
                 event event;
@@ -153,13 +154,13 @@ public:
                         event.type = event_type::unknown;
                         switch (sdl_event.user.code)
                         {
-                            case (int)UserEvents::ReloadGame:
+                            case (int)user_events::reload_game:
                                 reload_game();
                                 break;
-                            case (int)UserEvents::RenderEvent:
+                            case (int)user_events::render_event:
                                 render();
                                 break;
-                            case (int)UserEvents::UpdateEvent:
+                            case (int)user_events::update_event:
                                 update();
                                 break;
                             default:
@@ -355,13 +356,13 @@ private:
 
 Uint32 update_timer_callback(Uint32 interval, void* param)
 {
-    push_user_event((int)UserEvents::UpdateEvent);
+    push_user_event((int)user_events::update_event);
     return interval;
 }
 
 Uint32 render_timer_callback(Uint32 interval, void* param)
 {
-    push_user_event((int)UserEvents::RenderEvent);
+    push_user_event((int)user_events::render_event);
     return interval;
 }
 
@@ -384,7 +385,7 @@ Uint32 hot_reload_timer_callback(Uint32 interval, void* param)
 
         if (next_write_time == current_write_time)
         {
-            push_user_event((int)UserEvents::ReloadGame);
+            push_user_event((int)user_events::reload_game);
             file_is_changing    = false;
             time_during_loading = next_write_time;
         }
