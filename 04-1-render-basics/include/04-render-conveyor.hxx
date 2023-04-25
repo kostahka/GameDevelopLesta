@@ -9,6 +9,8 @@ struct position_3d
     double z;
 };
 
+position_3d operator+(const position_3d& p1, const position_3d& p2);
+
 struct vertex
 {
     position_3d pos;
@@ -18,27 +20,32 @@ struct vertex
 using vertex_vector = std::vector<vertex>;
 using index_vector  = std::vector<uint16_t>;
 
-class ifragment_shader
+struct uniforms
 {
-public:
-    virtual void modify(pixel& pixel) = 0;
+    double f1;
+    double f2;
+    double f3;
+    double f4;
 };
 
-class ivertex_shader
+struct irender_program
 {
-public:
-    virtual void modify(vertex&) = 0;
+    virtual void   set_uniforms(const uniforms&) = 0;
+    virtual vertex vertex_shader(const vertex&)  = 0;
+    virtual color  fragment_shader(const pixel&) = 0;
 };
 
 class render_conveyor
 {
 public:
-    render_conveyor(canvas*, ivertex_shader*, ifragment_shader*);
+    render_conveyor(canvas*);
+
+    void set_program(irender_program*);
 
     void clear(color);
     void switch_buffers();
 
-    void draw_triangle(vertex v1, vertex v2, vertex v3);
+    void draw_triangle(vertex& v1, vertex& v2, vertex& v3);
     void draw_triangles(vertex_vector& vertices, index_vector& indexes);
 
     void set_pixel(pixel pixel);
@@ -59,6 +66,13 @@ private:
     int32_t      w;
     int32_t      h;
 
-    ivertex_shader*   v_shader;
-    ifragment_shader* f_shader;
+    irender_program* program = nullptr;
 };
+
+position    interpolate(const position& p1, const position& p2, const double t);
+position_3d interpolate(const position_3d& p1,
+                        const position_3d& p2,
+                        const double       t);
+color       interpolate(const color& c1, const color& c2, const double t);
+vertex      interpolate(const vertex& v1, const vertex& v2, const double t);
+pixel       interpolate(const pixel& p1, const pixel& p2, const double t);

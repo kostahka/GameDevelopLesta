@@ -33,12 +33,13 @@ pixel interpolate(const pixel& p1, const pixel& p2, const double t)
     return { interpolate(p1.col, p2.col, t), interpolate(p1.pos, p2.pos, t) };
 };
 
-render_conveyor::render_conveyor(canvas*           canv,
-                                 ivertex_shader*   v_shader,
-                                 ifragment_shader* f_shader)
+position_3d operator+(const position_3d& p1, const position_3d& p2)
+{
+    return { p1.x + p2.x, p1.y + p2.y, p1.z + p2.z };
+};
+
+render_conveyor::render_conveyor(canvas* canv)
     : main_renderer(canv)
-    , v_shader(v_shader)
-    , f_shader(f_shader)
 {
     w = canv->get_width();
     h = canv->get_height();
@@ -50,6 +51,11 @@ void render_conveyor::clear(color col)
     std::fill(secondary_buffer.begin(), secondary_buffer.end(), col);
 };
 
+void render_conveyor::set_program(irender_program* program)
+{
+    this->program = program;
+}
+
 void render_conveyor::switch_buffers()
 {
     secondary_buffer.swap(main_renderer->get_buffer());
@@ -59,17 +65,21 @@ void render_conveyor::rasterize_horizontal_line(pixel         left,
                                                 pixel         right,
                                                 pixel_vector& out)
 {
-    for (int x = left.pos.x; x <= right.pos.x; x++)
-    {
-        double t         = static_cast<double>(x - left.pos.x) / right.pos.x;
-        pixel  new_pixel = interpolate(left, right, t);
-        out.push_back(new_pixel);
-    }
+    if (left.pos.x == right.pos.x)
+        out.push_back({ left });
+    else
+        for (int x = left.pos.x; x <= right.pos.x; x++)
+        {
+            double t = static_cast<double>(x - left.pos.x) /
+                       (right.pos.x - left.pos.x);
+            pixel new_pixel = interpolate(left, right, t);
+            out.push_back(new_pixel);
+        }
 };
 
 void render_conveyor::set_pixel(pixel pixel)
 {
-    const int32_t index     = w * pixel.pos.y + pixel.pos.x;
+    const size_t index      = w * pixel.pos.y + pixel.pos.x;
     secondary_buffer[index] = pixel.col;
 };
 
@@ -89,14 +99,26 @@ void render_conveyor::rasterize_horizontal_triangle(pixel         left,
                                                     pixel         v3,
                                                     pixel_vector& out)
 {
-    int32_t y_step  = v3.pos.y < left.pos.y ? 1 : -1;
-    int32_t y_delta = std::abs(v3.pos.y - left.pos.y);
-    for (int32_t y = v3.pos.y; y != left.pos.y; y += y_step)
+    if (v3.pos.y == left.pos.y)
     {
-        double t = static_cast<double>(std::abs(y - v3.pos.y)) / y_delta;
-        pixel  line_left  = interpolate(left, v3, t);
-        pixel  line_right = interpolate(right, v3, t);
-        rasterize_horizontal_line(line_left, line_right, out);
+        if (v3.pos.x < left.pos.x)
+            rasterize_horizontal_line(v3, right, out);
+        else if (v3.pos.x > right.pos.x)
+            rasterize_horizontal_line(left, v3, out);
+        else
+            rasterize_horizontal_line(left, right, out);
+    }
+    else
+    {
+        int32_t y_step  = v3.pos.y < left.pos.y ? 1 : -1;
+        int32_t y_delta = std::abs(v3.pos.y - left.pos.y);
+        for (int32_t y = v3.pos.y; y != left.pos.y; y += y_step)
+        {
+            double t = static_cast<double>(std::abs(y - v3.pos.y)) / y_delta;
+            pixel  line_left  = interpolate(left, v3, t);
+            pixel  line_right = interpolate(right, v3, t);
+            rasterize_horizontal_line(line_left, line_right, out);
+        }
     }
 };
 
@@ -134,32 +156,38 @@ void render_conveyor::rasterize_triangle(pixel         v1,
         _v2    = v2;
     }
 
-    double horizontal_t =
-        static_cast<double>(std::abs(middle.pos.y - _v1.pos.y)) /
-        std::abs(_v1.pos.y - _v2.pos.y);
+    auto is_left = [](pixel& v, pixel& v2) { return v.pos.x < v2.pos.x; };
 
-    pixel horizontal_v = interpolate(_v1, _v2, horizontal_t);
-
-    auto is_left = [](pixel& v, pixel v2) { return v.pos.x < v2.pos.x; };
-
-    if (is_left(middle, horizontal_v))
+    if (_v1.pos.y == _v2.pos.y)
     {
-        rasterize_horizontal_triangle(middle, horizontal_v, _v1, out);
-        rasterize_horizontal_triangle(middle, horizontal_v, _v2, out);
+        if (is_left(_v1, _v2))
+            rasterize_horizontal_triangle(_v1, _v2, middle, out);
+        else
+            rasterize_horizontal_triangle(_v2, _v1, middle, out);
     }
     else
     {
-        rasterize_horizontal_triangle(horizontal_v, middle, _v1, out);
-        rasterize_horizontal_triangle(horizontal_v, middle, _v2, out);
+        double horizontal_t =
+            static_cast<double>(std::abs(middle.pos.y - _v1.pos.y)) /
+            std::abs(_v1.pos.y - _v2.pos.y);
+
+        pixel horizontal_v = interpolate(_v1, _v2, horizontal_t);
+
+        if (is_left(middle, horizontal_v))
+        {
+            rasterize_horizontal_triangle(middle, horizontal_v, _v1, out);
+            rasterize_horizontal_triangle(middle, horizontal_v, _v2, out);
+        }
+        else
+        {
+            rasterize_horizontal_triangle(horizontal_v, middle, _v1, out);
+            rasterize_horizontal_triangle(horizontal_v, middle, _v2, out);
+        }
     }
 };
 
-void render_conveyor::draw_triangle(vertex v1, vertex v2, vertex v3)
+void render_conveyor::draw_triangle(vertex& v1, vertex& v2, vertex& v3)
 {
-    v_shader->modify(v1);
-    v_shader->modify(v2);
-    v_shader->modify(v3);
-
     pixel_vector pixels;
 
     auto to_pixel = [](vertex& v)
@@ -169,12 +197,25 @@ void render_conveyor::draw_triangle(vertex v1, vertex v2, vertex v3)
                         static_cast<int32_t>(std::round(v.pos.y)) } };
     };
 
-    rasterize_triangle(to_pixel(v1), to_pixel(v2), to_pixel(v3), pixels);
-
-    for (pixel& p : pixels)
+    if (program != nullptr)
     {
-        f_shader->modify(p);
+        vertex _v1 = program->vertex_shader(v1);
+        vertex _v2 = program->vertex_shader(v2);
+        vertex _v3 = program->vertex_shader(v3);
+
+        rasterize_triangle(to_pixel(_v1), to_pixel(_v2), to_pixel(_v3), pixels);
     }
+    else
+        rasterize_triangle(to_pixel(v1), to_pixel(v2), to_pixel(v3), pixels);
+
+    if (program != nullptr)
+    {
+        for (size_t i = 0; i < pixels.size(); i++)
+        {
+            pixels[i].col = program->fragment_shader(pixels[i]);
+        }
+    }
+
     draw_pixels(pixels);
 };
 
