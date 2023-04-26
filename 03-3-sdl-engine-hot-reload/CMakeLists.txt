@@ -25,3 +25,11 @@ target_link_libraries(engine PRIVATE SDL3::SDL3-static)
 set_target_properties(engine PROPERTIES ENABLE_EXPORTS ON)
 
 target_link_libraries(game-hot-load-shared PRIVATE engine)
+
+if(MINGW)
+    set_target_properties(engine PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+                                            ${CMAKE_BINARY_DIR})
+    set_target_properties(
+        game-hot-load-shared PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+                                        ${CMAKE_BINARY_DIR})
+endif()

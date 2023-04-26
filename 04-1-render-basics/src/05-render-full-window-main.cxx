@@ -8,7 +8,6 @@
 
 #include <SDL3/SDL.h>
 
-#include "00-canvas-basic.hxx"
 #include "04-render-conveyor.hxx"
 
 const int screen_width  = 320;
@@ -17,12 +16,12 @@ const int screen_height = 280;
 constexpr color color_black{ 0, 0, 0 };
 
 constexpr double circle_radius         = 100.0;
-constexpr double circle_radius_delta   = 10.0;
+constexpr double circle_radius_delta   = 50.0;
 constexpr int    circle_vertices_count = 20;
 constexpr int    circle_indexes_count  = circle_vertices_count * 3;
 
-constexpr color circle_center_color{ 55, 55, 255 };
-constexpr color circle_end_color{ 55, 55, 155 };
+constexpr color circle_center_color{ 253, 218, 13 };
+constexpr color circle_end_color{ 255, 191, 0 };
 
 constexpr double circle_delta_angle =
     2.0 * std::numbers::pi / circle_vertices_count;
