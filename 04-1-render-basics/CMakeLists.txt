@@ -70,3 +70,16 @@ target_include_directories(05-render-full-window
                            PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(05-render-full-window PUBLIC SDL3::SDL3-static)
+
+add_executable(
+    06-render-full-window
+    include/00-canvas-basic.hxx
+    include/04-render-conveyor.hxx
+    src/00-canvas-basic.cxx
+    src/04-render-conveyor.cxx
+    src/06-render-full-window-main.cxx)
+
+target_include_directories(06-render-full-window
+                           PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_link_libraries(06-render-full-window PUBLIC SDL3::SDL3-static)

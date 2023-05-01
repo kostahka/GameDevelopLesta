@@ -1,9 +1,5 @@
-#include <SDL_events.h>
-#include <SDL_timer.h>
 #include <cmath>
-#include <cstdint>
 #include <iostream>
-#include <math.h>
 #include <numbers>
 
 #include <SDL3/SDL.h>
@@ -63,8 +59,8 @@ struct render_program : public irender_program
         double distance = std::sqrt(std::pow(p_mouse.pos.x - p.pos.x, 2) +
                                     std::pow(p_mouse.pos.y - p.pos.y, 2));
 
-        double new_radius =
-            radius + 5.0 * sin(time + sin(p.pos.x)) * cos(time * cos(p.pos.y));
+        double new_radius = radius + 5.0 * sin(time + std::sin(p.pos.x)) *
+                                         std::cos(time * cos(p.pos.y));
         if (distance < new_radius)
         {
             return { 0, 0, 0 };
