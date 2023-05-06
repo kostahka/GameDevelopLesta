@@ -18,7 +18,6 @@ jobs:
       with:
         submodules: true
 
-
     - name: Cache SDL3
       uses: actions/cache@v3
       with:
