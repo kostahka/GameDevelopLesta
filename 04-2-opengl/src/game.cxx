@@ -1,4 +1,5 @@
 #include "engine.hxx"
+
 #include <iostream>
 #include <math.h>
 #include <vector>
@@ -29,29 +30,12 @@ public:
 
     };
 
-    void on_update() override
-    {
-        for (int i = 0; i < rects_amount; i++)
-        {
-            float x      = rects[i].x;
-            float height = 200 * (1 + sin(update_time_ms / 1000.0f + x) *
-                                          cos(update_time_ms / 1000.0f + x));
-            rects[i].y   = 480 - height;
-            rects[i].h   = height;
-        }
-    };
+    virtual void on_update(duration<int, std::milli> delta_time) override{};
 
-    void on_render() const override
+    virtual void on_render(duration<int, std::milli> delta_time) const override
     {
-        game_engine->set_render_draw_color(0, 0, 0, 255);
-        game_engine->render_fill_rect(nullptr);
-
-        for (const rect& r : rects)
-        {
-            game_engine->set_render_draw_color(
-                155, 155 * sin(r.h / 200), 255 * cos(r.h / 200), 255);
-            game_engine->render_fill_rect(&r);
-        }
+        game_engine->clear_color({ 1.0, 0.0, 1.0, 0.0 });
+        game_engine->swap_buffers();
     };
 
 private:

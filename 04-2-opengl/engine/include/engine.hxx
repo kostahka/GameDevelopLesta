@@ -1,6 +1,8 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
 
+#include "color.hxx"
+
 #include <chrono>
 #include <ostream>
 #include <ratio>
@@ -84,6 +86,9 @@ public:
 #endif
     virtual std::string_view start_game_loop() = 0;
 
+    virtual void clear_color(color) = 0;
+    virtual void swap_buffers()     = 0;
+
     engine_configuration configuration{ milliseconds{ 1000 / 60 },
                                         milliseconds{ 1000 / 90 } };
 };
@@ -110,8 +115,6 @@ public:
 
 }; // namespace Kengine
 
-#ifdef ENGINE_DEV
 extern "C" Kengine::game* create_game(Kengine::engine*);
-#endif
 
 #endif // ENGINE_H_

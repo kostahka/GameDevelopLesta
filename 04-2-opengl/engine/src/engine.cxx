@@ -1,14 +1,19 @@
 #include "engine.hxx"
 
-#include <SDL3/SDL.h>
+#include <SDL_video.h>
 #include <chrono>
 #include <efsw/efsw.hpp>
 #include <exception>
 #include <filesystem>
+#include <glad/glad.h>
 #include <iostream>
 #include <ratio>
 #include <string>
 #include <string_view>
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
+#include <SDL3/SDL_opengl_glext.h>
 
 namespace Kengine
 {
@@ -56,6 +61,9 @@ public:
 
     std::string_view uninitialize() override
     {
+        if (context)
+            SDL_GL_DeleteContext(context);
+
         if (window)
             SDL_DestroyWindow(window);
 
@@ -82,6 +90,51 @@ public:
             return "failed to create window";
         }
 
+        int gl_major_version = 3;
+        int gl_minor_version = 2;
+        int gl_profile       = SDL_GL_CONTEXT_PROFILE_ES;
+
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gl_major_version);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, gl_minor_version);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, gl_profile);
+
+        context = SDL_GL_CreateContext(window);
+        if (context == nullptr)
+        {
+            std::cerr << "Failed to create GL context. Error: "
+                      << SDL_GetError() << std::endl;
+            return "failed to create context";
+        }
+
+        if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
+                                &gl_major_version) ||
+            SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,
+                                &gl_minor_version))
+        {
+            std::cerr << "Failed to get GL versions. Error: " << SDL_GetError()
+                      << std::endl;
+            return "failed to get GL versions";
+        }
+
+        if (gl_major_version < 3 || gl_minor_version < 2)
+        {
+            std::cerr << "Open GL context version is low. Minimum required: 3.2"
+                      << std::endl;
+            return "open gl version is low";
+        }
+
+        std::clog << "Open GL version: " << gl_major_version << "."
+                  << gl_minor_version << std::endl;
+
+        auto load_gl_func = [](const char* func_name)
+        { return reinterpret_cast<void*>(SDL_GL_GetProcAddress(func_name)); };
+
+        if (gladLoadGLES2Loader(load_gl_func) == 0)
+        {
+            std::cerr << "Failed to initialize glad" << std::endl;
+            return "failed to init glad";
+        }
+
         bool      continue_loop = true;
         SDL_Event sdl_event;
 
@@ -92,7 +145,6 @@ public:
 
         while (continue_loop)
         {
-
             while (SDL_PollEvent(&sdl_event))
             {
                 event event;
@@ -149,6 +201,14 @@ public:
     };
 
     void set_game(game* e_game) override { this->e_game = e_game; }
+
+    void clear_color(color col) override
+    {
+        glad_glClearColor(col.r, col.g, col.b, col.a);
+        glad_glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    };
+
+    void swap_buffers() override { SDL_GL_SwapWindow(window); };
 
 #ifdef ENGINE_DEV
     std::string_view dev_initialization(std::string lib_name,
@@ -223,7 +283,8 @@ public:
         if (create_game_func_ptr == nullptr)
         {
             std::cerr << "Failed to load function [create_game] from ["
-                      << tmp_lib_name << "]" << std::endl;
+                      << tmp_lib_name << "]. Error: " << SDL_GetError()
+                      << std::endl;
             return false;
         }
 
@@ -280,8 +341,9 @@ public:
 
 private:
     // Engine
-    game*       e_game = nullptr;
-    SDL_Window* window = nullptr;
+    game*         e_game  = nullptr;
+    SDL_Window*   window  = nullptr;
+    SDL_GLContext context = nullptr;
     // SDL keys to engine keys
     key_name get_key_name(SDL_Keycode sdl_key_code)
     {

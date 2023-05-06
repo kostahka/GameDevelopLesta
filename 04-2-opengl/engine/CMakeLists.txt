@@ -16,28 +16,39 @@ endif()
 set(ENGINE_DEV OFF CACHE BOOL "engine load game dll with hot reload")
 set(ENGINE_GAME_LIB_NAME "" CACHE STRING "game lib name to load")
 
-set(ENGINE_SRC "src/engine.cxx" "include/engine.hxx")
+set(GLAD_SRC "glad/src/glad.c")
+
+set(ENGINE_SRC "src/engine.cxx" "include/engine.hxx" ${GLAD_SRC})
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/glad/include)
 
 if(ENGINE_DEV)
 
-    add_executable(game_engine ${ENGINE_SRC})
-    target_link_libraries(game_engine PRIVATE SDL3::SDL3-static)
-    target_compile_definitions(game_engine PRIVATE ENGINE_DEV)
+    add_executable(game-engine ${ENGINE_SRC})
+    target_link_libraries(game-engine PRIVATE SDL3::SDL3-static)
+    target_compile_definitions(game-engine PUBLIC ENGINE_DEV)
     target_compile_definitions(
-        game_engine PRIVATE ENGINE_GAME_LIB_NAME="${ENGINE_GAME_LIB_NAME}")
+        game-engine PUBLIC ENGINE_GAME_LIB_NAME="${ENGINE_GAME_LIB_NAME}")
 
-    target_link_libraries(game_engine PRIVATE efsw)
+    target_link_libraries(game-engine PRIVATE efsw)
 
+    set_target_properties(game-engine PROPERTIES ENABLE_EXPORTS ON)
+    target_include_directories(game-engine
+                               PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+
+    target_link_libraries(game-engine INTERFACE ${ENGINE_GAME_LIB_NAME})
 else()
 
     #Shared engine lib
     add_library(game-engine-shared SHARED ${ENGINE_SRC})
     target_link_libraries(game-engine-shared PRIVATE SDL3::SDL3-static)
 
+    target_link_libraries(game-engine-shared PRIVATE efsw)
+
     #Static engine lib
     add_library(game-engine-static STATIC ${ENGINE_SRC})
     target_link_libraries(game-engine-static PRIVATE SDL3::SDL3-static)
 
+    target_link_libraries(game-engine-static PRIVATE efsw)
 endif()
