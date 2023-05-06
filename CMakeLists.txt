@@ -15,3 +15,6 @@ add_subdirectory(03-1-sdl-loop)
 add_subdirectory(03-2-sdl-loop-engine-lib)
 add_subdirectory(03-3-sdl-engine-hot-reload)
 add_subdirectory(04-1-render-basics)
+add_subdirectory(04-2-opengl)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
