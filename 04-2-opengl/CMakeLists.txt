@@ -5,11 +5,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(04-2-opengl)
 
-set(ENGINE_DEV ON)
-set(ENGINE_GAME_LIB_NAME game-opengl)
+set(ENGINE_DEV ON CACHE BOOL "engine load game dll with hot reload")
+set(ENGINE_GAME_LIB_NAME "game-opengl" CACHE STRING "game lib name to load")
 
 add_library(game-opengl SHARED src/game.cxx)
-
-target_link_libraries(game-opengl PUBLIC game-engine)
 
 add_subdirectory(engine)

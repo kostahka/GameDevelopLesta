@@ -33,9 +33,9 @@ if(ENGINE_DEV)
 
     target_link_libraries(game-engine PRIVATE efsw)
 
-    set_target_properties(game-engine PROPERTIES ENABLE_EXPORTS ON)
-    target_include_directories(game-engine
-                               PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+    target_include_directories(${ENGINE_GAME_LIB_NAME}
+                               PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+    target_compile_definitions(${ENGINE_GAME_LIB_NAME} PUBLIC ENGINE_DEV)
 
     target_link_libraries(game-engine INTERFACE ${ENGINE_GAME_LIB_NAME})
 else()
