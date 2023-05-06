@@ -27,9 +27,8 @@ jobs:
           mingw-w64-x86_64-clang-tools-extra
 
     - uses: actions/checkout@v3
-
-    - name: Checkout submodules
-      uses: textbook/git-checkout-submodule-action@master
+      with:
+        submodules: true
 
     - name: Cache SDL3
       uses: actions/cache@v3
