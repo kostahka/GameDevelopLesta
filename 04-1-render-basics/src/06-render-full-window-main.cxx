@@ -13,7 +13,7 @@ const int screen_height = 280;
 constexpr color color_black{ 0, 0, 0 };
 
 //  <------------ Sun characteristics ------------------>
-constexpr double sun_radius         = 50.0;
+constexpr double sun_radius         = 75.0;
 constexpr double sun_radius_delta   = 5.0;
 constexpr int    sun_vertices_count = 20;
 constexpr int    sun_indexes_count  = sun_vertices_count * 3;
@@ -73,7 +73,7 @@ struct sun_render_program : public irender_program
         {
             delta_x += (-(v.pos.x - sun_center.x) / sun_radius) *
                        (v.pos.y - sea_level);
-            delta_y = -delta_y + sea_level - 2 * sun_radius;
+            delta_y = -delta_y + sun_radius;
         }
 
         position_3d delta_pos{ delta_x, delta_y, 0 };
