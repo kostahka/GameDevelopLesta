@@ -1,46 +1,78 @@
 #include "engine.hxx"
 
-#include <SDL_video.h>
 #include <chrono>
 #include <efsw/efsw.hpp>
 #include <exception>
 #include <filesystem>
-#include <glad/glad.h>
 #include <iostream>
 #include <ratio>
 #include <string>
 #include <string_view>
+#include <syncstream>
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_opengl.h>
-#include <SDL3/SDL_opengl_glext.h>
+#include <glad/glad.h>
+
+#include "file-last-modify-listener.hxx"
+#include "handle-file-modify.hxx"
+#include "handle-user-event.hxx"
+#include "user-events.hxx"
 
 namespace Kengine
 {
 
 class engine_impl;
 
-enum class user_events
+void APIENTRY debug_message(GLenum        source,
+                            GLenum        type,
+                            GLuint        id,
+                            GLenum        severity,
+                            GLsizei       length,
+                            const GLchar* message,
+                            const void*   userParam)
 {
+    std::osyncstream sync_err(std::cerr);
+    sync_err.write(message, length);
+    sync_err << std::endl;
+};
+
+void gl_get_error(int line, const char* file)
+{
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR)
+    {
+        std::cerr << "Error at line " << line << ", at file " << file
+                  << std::endl;
+        switch (error)
+        {
+            case GL_INVALID_ENUM:
+                std::cerr << "GL_INVALID_ENUM" << std::endl;
+                break;
+            case GL_INVALID_VALUE:
+                std::cerr << "GL_INVALID_VALUE" << std::endl;
+                break;
+            case GL_INVALID_OPERATION:
+                std::cerr << "GL_INVALID_OPERATION" << std::endl;
+                break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:
+                std::cerr << "GL_INVALID_FRAMEBUFFER_OPERATION" << std::endl;
+                break;
+            case GL_OUT_OF_MEMORY:
+                std::cerr << "GL_OUT_OF_MEMORY" << std::endl;
+                break;
+            case GL_STACK_UNDERFLOW:
+                std::cerr << "GL_STACK_UNDERFLOW" << std::endl;
+                break;
+            case GL_STACK_OVERFLOW:
+                std::cerr << "GL_STACK_OVERFLOW" << std::endl;
+                break;
+        }
+    }
+};
+
 #ifdef ENGINE_DEV
-    reload_game = 0,
+void reload_game(void* data);
 #endif
-};
-
-void push_user_event(int user_event_code)
-{
-    SDL_Event     event;
-    SDL_UserEvent user_event;
-
-    user_event.code = user_event_code;
-
-    user_event.type = SDL_EVENT_USER;
-
-    event.type = SDL_EVENT_USER;
-    event.user = user_event;
-
-    SDL_PushEvent(&event);
-};
 
 class engine_impl : public engine
 {
@@ -135,6 +167,20 @@ public:
             return "failed to init glad";
         }
 
+        std::string_view platform{ SDL_GetPlatform() };
+        if (platform != "Mac OS X")
+        {
+            glEnable(GL_DEBUG_OUTPUT);
+            glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+            glDebugMessageCallback(&debug_message, nullptr);
+            glDebugMessageControl(
+                GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+        }
+
+        glEnable(GL_DEPTH_TEST);
+
+        start_files_watch();
+
         bool      continue_loop = true;
         SDL_Event sdl_event;
 
@@ -145,6 +191,8 @@ public:
 
         while (continue_loop)
         {
+            handle_file_modify_listeners();
+
             while (SDL_PollEvent(&sdl_event))
             {
                 event event;
@@ -164,16 +212,7 @@ public:
                         break;
                     case SDL_EVENT_USER:
                         event.type = event_type::unknown;
-                        switch (sdl_event.user.code)
-                        {
-#ifdef ENGINE_DEV
-                            case (int)user_events::reload_game:
-                                reload_game();
-                                break;
-#endif
-                            default:
-                                break;
-                        }
+                        handle_user_event(sdl_event.user);
                     default:
                         event.type = event_type::unknown;
                 }
@@ -204,11 +243,17 @@ public:
 
     void clear_color(color col) override
     {
-        glad_glClearColor(col.r, col.g, col.b, col.a);
-        glad_glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(col.r, col.g, col.b, col.a);
+        gl_get_error(__LINE__, __FILE__);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        gl_get_error(__LINE__, __FILE__);
     };
 
-    void swap_buffers() override { SDL_GL_SwapWindow(window); };
+    void swap_buffers() override
+    {
+        SDL_GL_SwapWindow(window);
+        gl_get_error(__LINE__, __FILE__);
+    };
 
 #ifdef ENGINE_DEV
     std::string_view dev_initialization(std::string lib_name,
@@ -224,21 +269,25 @@ public:
         if (lib_name == "" || tmp_lib_name == "")
             return "no dev init";
 
-        reload_game();
+        load_e_game();
 
-        efsw::FileWatcher game_file_watcher;
+        auto file_listener = file_last_modify_listener::get_instance();
+        file_listener->add_file(lib_name, &reload_game, nullptr);
 
-        efsw::WatchID game_file_watch_id = game_file_watcher.addWatch(
-            lib_name, &game_file_update_listener, false);
-
-        game_file_watcher.watch();
         auto loop_return_code = start_game_loop();
-        game_file_watcher.removeWatch(game_file_watch_id);
 
         return loop_return_code;
     };
 
-    bool reload_game()
+    bool reload_e_game()
+    {
+        bool result = load_e_game();
+        if (result)
+            e_game->on_start();
+        return false;
+    };
+
+    bool load_e_game()
     {
         if (e_game)
         {
@@ -272,8 +321,8 @@ public:
 
         if (lib_handle == nullptr)
         {
-            std::cerr << "Failed to load lib from [" << tmp_lib_name << "]"
-                      << std::endl;
+            std::cerr << "Failed to load lib from [" << tmp_lib_name
+                      << "]. Error: " << SDL_GetError() << std::endl;
             return false;
         }
 
@@ -303,8 +352,6 @@ public:
 
         e_game = new_game;
 
-        e_game->on_start();
-
         return true;
     };
 
@@ -312,31 +359,6 @@ public:
     std::string tmp_lib_name = "";
     void*       lib_handle   = nullptr;
 
-    class GameFileUpdate : public efsw::FileWatchListener
-    {
-    public:
-        void handleFileAction(efsw::WatchID      watchid,
-                              const std::string& dir,
-                              const std::string& filename,
-                              efsw::Action       action,
-                              std::string        oldFilename) override
-        {
-            switch (action)
-            {
-                case efsw::Actions::Modified:
-                    push_user_event(static_cast<int>(user_events::reload_game));
-                    break;
-                case efsw::Actions::Add:
-                    break;
-                case efsw::Actions::Delete:
-                    break;
-                case efsw::Actions::Moved:
-                    break;
-                default:
-                    break;
-            }
-        };
-    } game_file_update_listener;
 #endif
 
 private:
@@ -380,6 +402,16 @@ engine* get_engine_instance()
 
     return engine_impl::instance;
 }
+
+#ifdef ENGINE_DEV
+void reload_game(void* data)
+{
+    auto engine_instance =
+        reinterpret_cast<engine_impl*>(engine_impl::instance);
+    engine_instance->reload_e_game();
+};
+#endif
+
 }; // namespace Kengine
 
 #ifdef ENGINE_DEV

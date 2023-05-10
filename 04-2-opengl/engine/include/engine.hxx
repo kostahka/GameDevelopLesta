@@ -1,7 +1,8 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
 
-#include "color.hxx"
+#include "shader-program.hxx"
+#include "vertex-array-object.hxx"
 
 #include <chrono>
 #include <ostream>

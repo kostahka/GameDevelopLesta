@@ -1,5 +1,8 @@
 #pragma once
 
+namespace Kengine
+{
+
 struct color
 {
     float r;
@@ -7,3 +10,5 @@ struct color
     float b;
     float a;
 };
+
+} // namespace Kengine

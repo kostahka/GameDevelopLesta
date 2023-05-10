@@ -11,3 +11,12 @@ set(ENGINE_GAME_LIB_NAME "game-opengl" CACHE STRING "game lib name to load")
 add_library(game-opengl SHARED src/game.cxx)
 
 add_subdirectory(engine)
+
+add_custom_target(
+    copy_shaders ALL
+    COMMAND
+        ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/shaders/*
+        ${CMAKE_CURRENT_BINARY_DIR}/
+    COMMENT "Copying shaders into binary directory")
+
+add_dependencies(game-opengl copy_shaders)

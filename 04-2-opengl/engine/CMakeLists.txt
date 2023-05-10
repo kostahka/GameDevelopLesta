@@ -18,7 +18,23 @@ set(ENGINE_GAME_LIB_NAME "" CACHE STRING "game lib name to load")
 
 set(GLAD_SRC "glad/src/glad.c")
 
-set(ENGINE_SRC "src/engine.cxx" "include/engine.hxx" ${GLAD_SRC})
+set(ENGINE_SRC
+    "src/engine.cxx"
+    "src/shader-program.cxx"
+    "src/vertex-array-object.cxx"
+    "src/file-last-modify-listener.cxx"
+    "src/user-events.cxx"
+    "src/handle-user-event.hxx"
+    "src/handle-file-modify.hxx"
+    "include/user-events.hxx"
+    "include/file-last-modify-listener.hxx"
+    "include/engine.hxx"
+    "include/shader-program.hxx"
+    "include/vertex-array-object.hxx"
+    "include/color.hxx"
+    "include/transform3d.hxx"
+    "include/vertex.hxx"
+    ${GLAD_SRC})
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/glad/include)
@@ -32,6 +48,8 @@ if(ENGINE_DEV)
         game-engine PUBLIC ENGINE_GAME_LIB_NAME="${ENGINE_GAME_LIB_NAME}")
 
     target_link_libraries(game-engine PRIVATE efsw)
+
+    set_target_properties(game-engine PROPERTIES ENABLE_EXPORTS ON)
 
     target_include_directories(${ENGINE_GAME_LIB_NAME}
                                PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
