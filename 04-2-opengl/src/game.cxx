@@ -43,6 +43,12 @@ public:
         game_engine->swap_buffers();
     };
 
+    ~my_game() override
+    {
+        delete program;
+        // delete vao;
+    };
+
 private:
     shader_program*      program = nullptr;
     vertex_array_object* vao     = nullptr;

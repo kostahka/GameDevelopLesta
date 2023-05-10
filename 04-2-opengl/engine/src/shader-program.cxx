@@ -117,12 +117,21 @@ public:
         , fragment_path(fragment_path)
     {
         auto f_listener = file_last_modify_listener::get_instance();
-        f_listener->add_file(vertex_path, &reload_shader, this);
+        vertex_listener_id =
+            f_listener->add_file(vertex_path, &reload_shader, this);
+        fragment_listener_id =
+            f_listener->add_file(fragment_path, &reload_shader, this);
         this->program =
             create_program(vertex_path.c_str(), fragment_path.c_str());
     };
 
-    ~shader_program_impl() override { glDeleteProgram(this->program); };
+    ~shader_program_impl() override
+    {
+        glDeleteProgram(this->program);
+        auto f_listener = file_last_modify_listener::get_instance();
+        f_listener->remove_file(vertex_listener_id);
+        f_listener->remove_file(fragment_listener_id);
+    };
 
     void use() override { glUseProgram(this->program); };
 
@@ -143,6 +152,9 @@ private:
     GLuint      program;
     std::string vertex_path;
     std::string fragment_path;
+
+    long vertex_listener_id;
+    long fragment_listener_id;
 };
 
 void reload_shader(void* data)

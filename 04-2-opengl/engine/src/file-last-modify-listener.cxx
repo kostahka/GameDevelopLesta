@@ -5,6 +5,7 @@
 #include <chrono>
 #include <efsw/efsw.hpp>
 #include <filesystem>
+#include <map>
 #include <vector>
 
 #include "handle-user-event.hxx"
@@ -19,13 +20,14 @@ struct file_modify_listener_info
     file_modify_callback func;
     void*                data;
     bool                 modify;
+    long                 id;
 };
 
 using namespace std::chrono;
 
 static std::vector<file_modify_listener_info> listeners;
 static const high_resolution_clock            clock;
-static const high_resolution_clock::duration  max_time_modify{ 1'000'000'000 };
+static const high_resolution_clock::duration  max_time_modify{ 2'000'000'000 };
 static high_resolution_clock::time_point      last_modify;
 static bool                                   any_file_modified = false;
 
@@ -64,14 +66,25 @@ void start_files_watch()
 class file_last_modify_listener_impl : public file_last_modify_listener,
                                        public efsw::FileWatchListener
 {
-    void add_file(std::string          file_path,
+    long add_file(std::string          file_path,
                   file_modify_callback f_modify_func,
                   void*                data) override
     {
         using namespace std::filesystem;
         path f_path(file_path);
-        listeners.push_back({ f_path.filename(), f_modify_func, data, false });
-        watcher.addWatch(f_path.parent_path(), this);
+        long id = watcher.addWatch(f_path.parent_path(), this);
+        listeners.push_back(
+            { f_path.filename(), f_modify_func, data, false, id });
+        return id;
+    };
+
+    void remove_file(long id) override
+    {
+        watcher.removeWatch(id);
+        listeners.erase(std::remove_if(listeners.begin(),
+                                       listeners.end(),
+                                       [&](file_modify_listener_info l)
+                                       { return l.id == id; }));
     };
 
     void handleFileAction(efsw::WatchID      watchid,
