@@ -3,7 +3,6 @@
 #include "vertex-array-object.hxx"
 #include "vertex.hxx"
 
-#include <bits/chrono.h>
 #include <ctime>
 #include <iostream>
 #include <math.h>
