@@ -15,6 +15,6 @@ public:
     virtual ~shader_program();
 };
 
-shader_program* create_shader_program(const std::string& vertex_path,
-                                      const std::string& fragment_path);
+extern shader_program* create_shader_program(const std::string& vertex_path,
+                                             const std::string& fragment_path);
 } // namespace Kengine
