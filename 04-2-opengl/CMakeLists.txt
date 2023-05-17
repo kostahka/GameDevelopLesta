@@ -20,3 +20,5 @@ add_custom_target(
     COMMENT "Copying shaders into binary directory")
 
 add_dependencies(game-opengl copy_shaders)
+
+target_link_libraries(game-opengl PRIVATE game-engine)

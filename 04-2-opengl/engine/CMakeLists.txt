@@ -58,7 +58,7 @@ if(ENGINE_DEV)
         ${ENGINE_GAME_LIB_NAME}
         PUBLIC ENGINE_GAME_LIB_NAME="${ENGINE_GAME_LIB_NAME}")
 
-    target_link_libraries(${ENGINE_GAME_LIB_NAME} PRIVATE game-engine)
+    #target_link_libraries(game-engine INTERFACE ${ENGINE_GAME_LIB_NAME})
 else()
 
     #Shared engine lib
