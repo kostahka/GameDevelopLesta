@@ -74,7 +74,7 @@ class file_last_modify_listener_impl : public file_last_modify_listener,
         path f_path(file_path);
         long id = watcher.addWatch(f_path.parent_path(), this);
         listeners.push_back(
-            { f_path.filename(), f_modify_func, data, false, id });
+            { f_path.filename().string(), f_modify_func, data, false, id });
         return id;
     };
 
