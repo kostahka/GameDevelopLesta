@@ -54,6 +54,9 @@ if(ENGINE_DEV)
     target_include_directories(${ENGINE_GAME_LIB_NAME}
                                PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
     target_compile_definitions(${ENGINE_GAME_LIB_NAME} PUBLIC ENGINE_DEV)
+    target_compile_definitions(
+        ${ENGINE_GAME_LIB_NAME}
+        PUBLIC ENGINE_GAME_LIB_NAME="${ENGINE_GAME_LIB_NAME}")
 
     target_link_libraries(game-engine INTERFACE ${ENGINE_GAME_LIB_NAME})
 else()
