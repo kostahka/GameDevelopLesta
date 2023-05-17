@@ -62,7 +62,7 @@ if(ENGINE_DEV_TEX)
         ${ENGINE_GAME_LIB_NAME_TEX}
         PUBLIC ENGINE_GAME_LIB_NAME="${ENGINE_GAME_LIB_NAME_TEX}")
 
-    target_link_libraries(engine-texture INTERFACE ${ENGINE_GAME_LIB_NAME_TEX})
+    #target_link_libraries(engine-texture INTERFACE ${ENGINE_GAME_LIB_NAME_TEX})
 else()
 
     #Shared engine lib
