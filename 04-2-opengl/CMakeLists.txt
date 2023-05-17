@@ -21,4 +21,4 @@ add_custom_target(
 
 add_dependencies(game-opengl copy_shaders)
 
-target_link_libraries(game-opengl PRIVATE game-engine)
+#target_link_libraries(game-opengl PRIVATE game-engine)

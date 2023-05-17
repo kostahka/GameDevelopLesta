@@ -3,18 +3,18 @@ cmake_minimum_required(VERSION 3.5)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(game-engine)
+project(engine-texture)
 
 find_package(SDL3 REQUIRED)
 
-add_subdirectory(efsw)
+#add_subdirectory(efsw)
 
 if(WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-set(ENGINE_DEV OFF CACHE BOOL "engine load game dll with hot reload")
-set(ENGINE_GAME_LIB_NAME "" CACHE STRING "game lib name to load")
+set(ENGINE_DEV_TEX OFF CACHE BOOL "engine load game dll with hot reload")
+set(ENGINE_GAME_LIB_NAME_TEX "" CACHE STRING "game lib name to load")
 
 set(GLAD_SRC "glad/src/glad.c")
 
@@ -26,6 +26,9 @@ set(ENGINE_SRC
     "src/user-events.cxx"
     "src/handle-user-event.hxx"
     "src/handle-file-modify.hxx"
+    "src/picopng.hxx"
+    "src/texture.cxx"
+    "include/texture.hxx"
     "include/user-events.hxx"
     "include/file-last-modify-listener.hxx"
     "include/engine.hxx"
@@ -39,26 +42,27 @@ set(ENGINE_SRC
 include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/glad/include)
 
-if(ENGINE_DEV)
+if(ENGINE_DEV_TEX)
 
-    add_executable(game-engine ${ENGINE_SRC})
-    target_link_libraries(game-engine PRIVATE SDL3::SDL3-static)
-    target_compile_definitions(game-engine PUBLIC ENGINE_DEV)
+    add_executable(engine-texture ${ENGINE_SRC})
+    target_link_libraries(engine-texture PRIVATE SDL3::SDL3-static)
+    target_compile_definitions(engine-texture PUBLIC ENGINE_DEV)
     target_compile_definitions(
-        game-engine PUBLIC ENGINE_GAME_LIB_NAME="${ENGINE_GAME_LIB_NAME}")
+        engine-texture
+        PUBLIC ENGINE_GAME_LIB_NAME="${ENGINE_GAME_LIB_NAME_TEX}")
 
-    target_link_libraries(game-engine PRIVATE efsw)
+    target_link_libraries(engine-texture PRIVATE efsw)
 
-    set_target_properties(game-engine PROPERTIES ENABLE_EXPORTS ON)
+    set_target_properties(engine-texture PROPERTIES ENABLE_EXPORTS ON)
 
-    target_include_directories(${ENGINE_GAME_LIB_NAME}
+    target_include_directories(${ENGINE_GAME_LIB_NAME_TEX}
                                PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
-    target_compile_definitions(${ENGINE_GAME_LIB_NAME} PUBLIC ENGINE_DEV)
+    target_compile_definitions(${ENGINE_GAME_LIB_NAME_TEX} PUBLIC ENGINE_DEV)
     target_compile_definitions(
-        ${ENGINE_GAME_LIB_NAME}
-        PUBLIC ENGINE_GAME_LIB_NAME="${ENGINE_GAME_LIB_NAME}")
+        ${ENGINE_GAME_LIB_NAME_TEX}
+        PUBLIC ENGINE_GAME_LIB_NAME="${ENGINE_GAME_LIB_NAME_TEX}")
 
-    target_link_libraries(game-engine INTERFACE ${ENGINE_GAME_LIB_NAME})
+    target_link_libraries(engine-texture INTERFACE ${ENGINE_GAME_LIB_NAME_TEX})
 else()
 
     #Shared engine lib
