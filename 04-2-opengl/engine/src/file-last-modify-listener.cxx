@@ -103,8 +103,8 @@ class file_last_modify_listener_impl : public file_last_modify_listener,
                 case efsw::Actions::Modified:
                     push_user_event(
                         static_cast<int>(user_events::file_modified),
-                        &file_modify_event,
-                        reinterpret_cast<void*>(f_listener.base()));
+                        reinterpret_cast<user_event_func>(&file_modify_event),
+                        reinterpret_cast<void*>(&(*f_listener)));
                     break;
                 case efsw::Actions::Add:
                     break;
